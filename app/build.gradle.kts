@@ -68,22 +68,19 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
     // navigation
-    implementation ("androidx.navigation:navigation-compose:2.7.6")
+    implementation("androidx.navigation:navigation-compose:2.7.6")
 
     // cameraX
-    // CameraX core library using the camera2 implementation
-    val cameraxVersion = "1.4.0"
-    // The following line is optional, as the core library is included indirectly by camera-camera2
+    val cameraxVersion = "1.3.1"
     implementation("androidx.camera:camera-core:${cameraxVersion}")
     implementation("androidx.camera:camera-camera2:${cameraxVersion}")
-    // If you want to additionally use the CameraX Lifecycle library
     implementation("androidx.camera:camera-lifecycle:${cameraxVersion}")
-    // If you want to additionally use the CameraX VideoCapture library
     implementation("androidx.camera:camera-video:${cameraxVersion}")
-    // If you want to additionally use the CameraX View class
+
     implementation("androidx.camera:camera-view:${cameraxVersion}")
-    // If you want to additionally add CameraX ML Kit Vision Integration
-    implementation("androidx.camera:camera-mlkit-vision:${cameraxVersion}")
-    // If you want to additionally use the CameraX Extensions library
     implementation("androidx.camera:camera-extensions:${cameraxVersion}")
+
+    // ML Kit Face Detection
+    implementation("com.google.mlkit:face-detection:16.1.5")
+    implementation("com.google.android.gms:play-services-mlkit-face-detection:17.1.0")
 }
