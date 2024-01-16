@@ -2,7 +2,7 @@ package com.lattice.facerecognition
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.util.Log
+import com.lattice.facerecognition.data.ModelInfo
 import org.tensorflow.lite.DataType
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.gpu.CompatibilityList
@@ -54,7 +54,6 @@ class FaceNetModel(context : Context,
             useNNAPI = true
         }
         interpreter = Interpreter(FileUtil.loadMappedFile(context, model.assetsFilename ) , interpreterOptions )
-        Log.d("MEdhak","Using ${model.name} model.")
     }
 
 
@@ -69,7 +68,6 @@ class FaceNetModel(context : Context,
         val t1 = System.currentTimeMillis()
         val faceNetModelOutputs = Array( 1 ){ FloatArray( embeddingDim ) }
         interpreter.run( inputs, faceNetModelOutputs )
-        Log.i( "Performance" , "${model.name} Inference Speed in ms : ${System.currentTimeMillis() - t1}")
         return faceNetModelOutputs
     }
 

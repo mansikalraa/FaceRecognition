@@ -1,13 +1,0 @@
-
-qkotlin:S117r"SRename this local variable to match the regular expression ^`?[_a-z][a-zA-Z0-9]*`?$(Áëê§8ÊŠÑ1
-qkotlin:S117s"SRename this local variable to match the regular expression ^`?[_a-z][a-zA-Z0-9]*`?$(ª¨¦±8‚ÊŠÑ1
-qkotlin:S117t"SRename this local variable to match the regular expression ^`?[_a-z][a-zA-Z0-9]*`?$(åÑ¥’8‚ÊŠÑ1
-qkotlin:S117u"SRename this local variable to match the regular expression ^`?[_a-z][a-zA-Z0-9]*`?$(öšÙ8‚ÊŠÑ1
-vkotlin:S117v"SRename this local variable to match the regular expression ^`?[_a-z][a-zA-Z0-9]*`?$(•ºÍÖøÿÿÿÿ8‚ÊŠÑ1
-qkotlin:S117w"SRename this local variable to match the regular expression ^`?[_a-z][a-zA-Z0-9]*`?$(í†¡‚8‚ÊŠÑ1
-;kotlin:S6310e"Avoid hardcoded dispatchers.(’šÀ™8‚ÊŠÑ1
->kotlin:S1128	"Remove this unused import.(ÊÒÅ­ùÿÿÿÿ8“ÊŠÑ1
-vkotlin:S3776n"RRefactor this method to reduce its Cognitive Complexity from 21 to the 15 allowed.(…ÅŞ˜úÿÿÿÿ8—ÊŠÑ1
-Kkotlin:S6518V",Replace function call with indexed accessor.(ÊÖ¯İ8›ÊŠÑ1
-Kkotlin:S6518W",Replace function call with indexed accessor.(ˆ‰­8œÊŠÑ1
-Pkotlin:S6518X",Replace function call with indexed accessor.(©Ûçıÿÿÿÿ8œÊŠÑ1

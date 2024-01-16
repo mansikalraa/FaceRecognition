@@ -1,24 +1,8 @@
 package com.lattice.facerecognition
 
-/*
- * Copyright 2023 Shubham Panchal
- * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.Rect
 import android.util.Log
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
@@ -26,6 +10,8 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
+import com.lattice.facerecognition.data.Prediction
+import com.lattice.facerecognition.utils.BitmapUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -35,7 +21,6 @@ import kotlin.math.sqrt
 
 // Analyser class to process frames and produce detections.
 class FrameAnalyser( context: Context ,
-                     private var boundingBoxOverlay: BoundingBoxOverlay ,
                      private var model: FaceNetModel
 ) : ImageAnalysis.Analyzer {
 
@@ -67,12 +52,6 @@ class FrameAnalyser( context: Context ,
     // <-------------------------------------------------------->
 
 
-    init {
-        boundingBoxOverlay.drawMaskLabel = isMaskDetectionOn
-    }
-
-
-
     @SuppressLint("UnsafeOptInUsageError")
     override fun analyze(image: ImageProxy) {
         // If the previous frame is still being processed, then skip this frame
@@ -89,12 +68,6 @@ class FrameAnalyser( context: Context ,
             frameBitmap.copyPixelsFromBuffer( image.planes[0].buffer )
             frameBitmap = BitmapUtils.rotateBitmap( frameBitmap , image.imageInfo.rotationDegrees.toFloat() )
             //val frameBitmap = BitmapUtils.imageToBitmap( image.image!! , image.imageInfo.rotationDegrees )
-
-            // Configure frameHeight and frameWidth for output2overlay transformation matrix.
-            if ( !boundingBoxOverlay.areDimsInit ) {
-                boundingBoxOverlay.frameHeight = frameBitmap.height
-                boundingBoxOverlay.frameWidth = frameBitmap.width
-            }
 
             val inputImage = InputImage.fromBitmap( frameBitmap , 0 )
             detector.process(inputImage)
@@ -200,8 +173,6 @@ class FrameAnalyser( context: Context ,
             }
             withContext( Dispatchers.Main ) {
                 // Clear the BoundingBoxOverlay and set the new results ( boxes ) to be displayed.
-                boundingBoxOverlay.faceBoundingBoxes = predictions
-                boundingBoxOverlay.invalidate()
                 isProcessing = false
             }
         }
@@ -223,5 +194,3 @@ class FrameAnalyser( context: Context ,
     }
 
 }
-
-data class Prediction(var bbox : Rect, var label : String, var maskLabel : String = "" )

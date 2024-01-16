@@ -1,4 +1,6 @@
-package com.lattice.facerecognition
+package com.lattice.facerecognition.data
+
+import com.lattice.facerecognition.data.ModelInfo
 
 class Models {
 
@@ -39,16 +41,6 @@ class Models {
             512 ,
             160
         )
-
-
     }
 
 }
-
-class ModelInfo(
-    val name : String ,
-    val assetsFilename : String ,
-    val cosineThreshold : Float ,
-    val l2Threshold : Float ,
-    val outputDims : Int ,
-    val inputDims : Int )
