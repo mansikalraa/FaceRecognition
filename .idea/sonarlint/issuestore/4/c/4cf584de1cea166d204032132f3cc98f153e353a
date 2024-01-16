@@ -1,0 +1,6 @@
+
+Bkotlin:S125["Remove this commented out code.(ÿ©”ùÿÿÿÿ8­´Ñ1
+;kotlin:S6310r"Avoid hardcoded dispatchers.(©ªŸ³8“­´Ñ1
+<kotlin:S6310É"Avoid hardcoded dispatchers.(Í¡·Ş8“­´Ñ1
+vkotlin:S3776q"RRefactor this method to reduce its Cognitive Complexity from 49 to the 15 allowed.(ïŸ«Îüÿÿÿÿ8Ÿ­´Ñ1
+Mkotlin:S6529O".Replace collection size check with "isEmpty()"(„ £Û8¡­´Ñ1

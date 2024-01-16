@@ -1,5 +1,6 @@
 package com.lattice.facerecognition.ui
 
+import android.util.AttributeSet
 import android.util.Log
 import androidx.annotation.OptIn
 import androidx.camera.core.CameraSelector
@@ -26,6 +27,9 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection
+import com.lattice.facerecognition.BoundingBoxOverlay
+import com.lattice.facerecognition.FaceNetModel
+import com.lattice.facerecognition.FrameAnalyser
 import java.util.concurrent.Executors
 
 @OptIn(ExperimentalGetImage::class)
