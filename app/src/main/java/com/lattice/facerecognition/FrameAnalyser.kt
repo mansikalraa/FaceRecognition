@@ -1,6 +1,7 @@
 package com.lattice.facerecognition
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
 import androidx.camera.core.ImageAnalysis
@@ -19,6 +20,7 @@ import kotlin.math.pow
 import kotlin.math.sqrt
 
 class FrameAnalyser(
+    private val context: Context,
     private var model: FaceNetModel
 ) : ImageAnalysis.Analyzer {
 
@@ -126,6 +128,7 @@ class FrameAnalyser(
                             bestScoreUserName
                         )
                     )
+                    (context.applicationContext as FaceRecognitionApp).nameDetected.emit(bestScoreUserName)
 
                 } catch (e: Exception) {
                     // If any exception occurs with this box and continue with the next boxes.

@@ -25,7 +25,7 @@ class TensorFlowModule {
     @Provides
     @Singleton
     internal fun provideFrameAnalyzer(@ApplicationContext context: Context, faceNetModel: FaceNetModel): FrameAnalyser {
-        return FrameAnalyser(faceNetModel)
+        return FrameAnalyser(context, faceNetModel)
     }
 
     @Provides

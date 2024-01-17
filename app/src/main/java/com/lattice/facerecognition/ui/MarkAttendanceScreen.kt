@@ -9,13 +9,22 @@ import androidx.camera.core.Preview
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.lattice.facerecognition.FaceRecognitionApp
 import com.lattice.facerecognition.utils.GetCameraProvider.getCameraProvider
 import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
@@ -25,9 +34,25 @@ fun MarkAttendanceScreen(
     navController: NavController,
     viewModel: MarkAttendanceViewModel = hiltViewModel()
 ) {
-    Box(modifier = Modifier.fillMaxSize()){
-        CameraPreview(viewModel)
+    val snackBarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+    val name = (context.applicationContext as FaceRecognitionApp).nameDetected.collectAsState(
+                initial = ""
+            ).value
+
+    LaunchedEffect(name){
+        if (name.isNotEmpty()) snackBarHostState.showSnackbar(
+            "$name identified"
+        )
     }
+    Scaffold (
+        snackbarHost = { SnackbarHost(snackBarHostState) },
+        content = {
+            Box(modifier = Modifier.fillMaxSize().padding(it)){
+                CameraPreview(viewModel)
+            }
+        }
+    )
 }
 
 @Composable
