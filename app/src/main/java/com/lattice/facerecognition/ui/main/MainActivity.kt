@@ -1,16 +1,15 @@
 package com.lattice.facerecognition.ui.main
 
+import android.content.Intent
 import android.graphics.Bitmap
-import android.media.ExifInterface
+import androidx.exifinterface.media.ExifInterface
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.os.Environment
 import android.provider.DocumentsContract
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import androidx.navigation.compose.rememberNavController
 import com.lattice.facerecognition.FaceNetModel
@@ -45,7 +44,7 @@ class MainActivity : ComponentActivity() {
         if(preferenceStorage.serializeDataStored) {
             frameAnalyser.faceList = mainViewModel.loadSerializedImageData(filesDir)
         } else {
-            selectDir()
+            launchChooseDirectoryIntent()
         }
         setContent {
             FaceRecognitionTheme {
@@ -55,22 +54,20 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun selectDir() {
-        val dirUri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).toUri()
-        } else {
-            Environment.getExternalStorageDirectory().toUri()
-        }
-        val parentUri = DocumentsContract.buildChildDocumentsUriUsingTree(
-            dirUri,
-            "images"
-        )
-        val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(
-            parentUri,
-            DocumentsContract.getTreeDocumentId( parentUri )
-        )
+    private fun launchChooseDirectoryIntent() {
+        val intent = Intent( Intent.ACTION_OPEN_DOCUMENT_TREE )
+        directoryAccessLauncher.launch( intent )
+    }
+
+    private val directoryAccessLauncher = registerForActivityResult( ActivityResultContracts.StartActivityForResult() ) {
+        val dirUri = it.data?.data ?: return@registerForActivityResult
+        val childrenUri =
+            DocumentsContract.buildChildDocumentsUriUsingTree(
+                dirUri,
+                DocumentsContract.getTreeDocumentId( dirUri )
+            )
         val tree = DocumentFile.fromTreeUri(this, childrenUri)
-        val images = ArrayList<Pair<String, Bitmap>>()
+        val images = ArrayList<Pair<String,Bitmap>>()
         var errorFound = false
         if ( tree!!.listFiles().isNotEmpty()) {
             for ( doc in tree.listFiles() ) {
@@ -90,6 +87,9 @@ class MainActivity : ComponentActivity() {
                     errorFound = true
                 }
             }
+        }
+        else {
+            errorFound = true
         }
         if ( !errorFound ) {
             fileReader.run( images , fileReaderCallback )

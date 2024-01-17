@@ -2,9 +2,8 @@ package com.lattice.facerecognition.data.sharedpreferences
 
 import android.content.SharedPreferences
 import androidx.core.content.edit
-import javax.inject.Inject
 
-class PreferenceStorageImpl @Inject constructor(private val sharedPreferences: SharedPreferences): PreferenceStorage {
+class PreferenceStorageImpl(private val sharedPreferences: SharedPreferences) : PreferenceStorage {
 
     override var serializeDataStored: Boolean
         get() = sharedPreferences.getBoolean(SERIALIZE_DATA, false)
@@ -16,6 +15,7 @@ class PreferenceStorageImpl @Inject constructor(private val sharedPreferences: S
         }
 
     companion object {
+        const val PREFS_NAME = "face_pref"
         const val SERIALIZE_DATA = "serialized_data"
     }
 }

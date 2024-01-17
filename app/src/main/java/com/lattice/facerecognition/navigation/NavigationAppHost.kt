@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.lattice.facerecognition.ui.AddPhotoScreen
 import com.lattice.facerecognition.ui.LandingScreen
+import com.lattice.facerecognition.ui.MarkAttendanceScreen
 
 @Composable
 fun NavigationAppHost(navController: NavController) {
@@ -16,5 +17,6 @@ fun NavigationAppHost(navController: NavController) {
         builder = {
             composable(Screen.LandingScreenRoute.route) { LandingScreen(navController)}
             composable(Screen.AddPhotoScreenRoute.route) { AddPhotoScreen(navController) }
+            composable(Screen.MarkAttendanceScreenRoute.route) { MarkAttendanceScreen(navController) }
         })
 }

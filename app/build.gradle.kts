@@ -100,6 +100,12 @@ dependencies {
 
     //Document file
     implementation("androidx.documentfile:documentfile:1.0.1")
+
+    // Hilt-ViewModel Compose
+    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+
+    //Encrypt Shared Preferences
+    implementation("androidx.security:security-crypto:1.0.0")
 }
 
 kapt {

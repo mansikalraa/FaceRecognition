@@ -16,10 +16,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.lattice.facerecognition.navigation.Screen
 
@@ -27,9 +30,15 @@ import com.lattice.facerecognition.navigation.Screen
 @Composable
 fun LandingScreen(navController: NavController) {
     val context = LocalContext.current
+    var index by remember {
+        mutableIntStateOf(1)
+    }
     val requestCameraPermission = rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission(), onResult = { granted ->
         if (granted) {
-            navController.navigate(Screen.AddPhotoScreenRoute.route)
+            when (index){
+                1 -> navController.navigate(Screen.AddPhotoScreenRoute.route)
+                2 -> navController.navigate(Screen.MarkAttendanceScreenRoute.route)
+            }
         } else {
             Log.d("manseeyy", "permission denied")
         }
@@ -51,6 +60,7 @@ fun LandingScreen(navController: NavController) {
                 ) {
                     Button(onClick = {
                         if (context.checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                            index = 1
                             requestCameraPermission.launch(Manifest.permission.CAMERA)
                         } else {
                             navController.navigate(Screen.AddPhotoScreenRoute.route)
@@ -60,9 +70,10 @@ fun LandingScreen(navController: NavController) {
                     }
                     Button(onClick = {
                         if (context.checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                            index = 2
                             requestCameraPermission.launch(Manifest.permission.CAMERA)
                         } else {
-                            // navigate
+                            navController.navigate(Screen.MarkAttendanceScreenRoute.route)
                         }
                     }) {
                         Text(text = "Mark attendance")
