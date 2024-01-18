@@ -15,6 +15,7 @@ class MainViewModel @Inject constructor(private val preferenceStorage: Preferenc
 
     internal fun saveSerializedImageData(filesDir: File, data : ArrayList<Pair<String,FloatArray>> ) {
         val serializedDataFile = File( filesDir , SERIALIZED_DATA_FILENAME )
+        if (serializedDataFile.exists()) serializedDataFile.delete()
         ObjectOutputStream( FileOutputStream( serializedDataFile )  ).apply {
             writeObject( data )
             flush()
