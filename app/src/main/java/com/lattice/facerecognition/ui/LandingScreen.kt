@@ -59,6 +59,11 @@ fun LandingScreen(navController: NavController) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Button(onClick = {
+                            navController.navigate(Screen.RegisteredFaceScreenRoute.route)
+                    }) {
+                        Text(text = "Registered names")
+                    }
+                    Button(onClick = {
                         if (context.checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
                             index = 1
                             requestCameraPermission.launch(Manifest.permission.CAMERA)

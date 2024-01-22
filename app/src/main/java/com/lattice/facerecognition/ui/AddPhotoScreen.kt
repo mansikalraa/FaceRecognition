@@ -1,37 +1,38 @@
 package com.lattice.facerecognition.ui
 
 import android.graphics.Bitmap
-import androidx.lifecycle.viewmodel.compose.viewModel
 import android.util.Log
 import android.util.Size
+import android.view.ViewGroup
 import androidx.annotation.OptIn
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ExperimentalGetImage
-import androidx.camera.view.CameraController
-import androidx.camera.view.LifecycleCameraController
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.Preview
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
@@ -42,7 +43,8 @@ import androidx.navigation.NavController
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection
 import com.lattice.facerecognition.utils.BitmapUtils
-import java.nio.ByteBuffer
+import com.lattice.facerecognition.utils.GetCameraProvider.getCameraProvider
+import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
 
 @OptIn(ExperimentalGetImage::class)
@@ -51,77 +53,123 @@ fun AddPhotoScreen(
     navController: NavController,
     viewModel: AddPhotoScreenViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
-    val previewView: PreviewView = remember { PreviewView(context) }
-    val cameraController = remember { LifecycleCameraController(context) }
-    val lifecycleOwner = LocalLifecycleOwner.current
     val detector = FaceDetection.getClient()
-    cameraController.bindToLifecycle(lifecycleOwner)
-    cameraController.cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
-    previewView.controller = cameraController
-
-    val executor = remember { Executors.newSingleThreadExecutor() }
-
-    Box(modifier = Modifier.fillMaxSize()) {
-        AndroidView(factory = { previewView }, modifier = Modifier.fillMaxSize())
-        IconButton(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(16.dp),
-            onClick = {
-                cameraController.setImageAnalysisAnalyzer(executor) { imageProxy ->
-                    imageProxy.image?.let { image ->
-                        val pixelStride = imageProxy.planes[0].pixelStride
-                        val rowStride = imageProxy.planes[0].rowStride
-                        val rowPadding = rowStride - pixelStride * imageProxy.width
-                        var frameBitmap = Bitmap.createBitmap(
-                            imageProxy.width,
-                            imageProxy.height,
-                            Bitmap.Config.ARGB_8888
-                        )
-                        frameBitmap.copyPixelsFromBuffer(imageProxy.planes[0].buffer)
-                        frameBitmap =
-                            BitmapUtils.rotateBitmap(frameBitmap, imageProxy.imageInfo.rotationDegrees.toFloat())
-
-                        val inputImage = InputImage.fromBitmap(frameBitmap, 0)
-                        val img = InputImage.fromMediaImage(
-                            image,
-                            imageProxy.imageInfo.rotationDegrees
-                        )
-                        detector.process(inputImage)
-                            .addOnSuccessListener { faces ->
-                                if (faces.isEmpty()) {
-                                    // show snackbar
-                                    Log.d("manseeyy", "no face")
-                                } else {
-                                    for (face in faces) {
-                                        viewModel.currentFaceBitmap =
-                                            BitmapUtils.cropRectFromBitmap(
-                                                frameBitmap,
-                                                face.boundingBox
-                                            )
-                                        viewModel.showDialog = true
-                                        // show dialog with photo and name field
-                                    }
-                                }
-                            }
-                            .addOnFailureListener { e ->
-                                e.localizedMessage?.let { Log.e("ERROR", it) }
-                            }
+    CameraPreview { imageBitmap ->
+        val img = InputImage.fromBitmap(imageBitmap, 0)
+        detector.process(img)
+            .addOnSuccessListener { faces ->
+                if (faces.isEmpty()) Log.d("manseeyy", "no faces detected.")
+                else {
+                    for (face in faces) {
+                        val croppedBitmap =
+                            BitmapUtils.cropRectFromBitmap(imageBitmap, face.boundingBox)
+                        viewModel.currentFaceBitmap = croppedBitmap
+                        viewModel.showDialog = true
                     }
                 }
             }
+            .addOnFailureListener{ e ->
+                e.localizedMessage?.let { Log.e("ERROR", it) }
+            }
+    }
+    if (viewModel.showDialog) {
+        RegisterFaceDialog(viewModel = viewModel)
+    }
+}
+
+
+@OptIn(ExperimentalGetImage::class)
+@Composable
+fun CameraPreview(
+    modifier: Modifier = Modifier,
+    scaleType: PreviewView.ScaleType = PreviewView.ScaleType.FILL_CENTER,
+    cameraSelector: CameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA,
+    onCaptureButtonClick: (Bitmap) -> Unit
+) {
+    val coroutineScope = rememberCoroutineScope()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val cameraExecutor = remember {
+        Executors.newSingleThreadExecutor()
+    }
+    var imageBitmap by remember { mutableStateOf<Bitmap?>(null) }
+    Box(modifier = Modifier.fillMaxSize()) {
+        AndroidView(
+            modifier = modifier,
+            factory = { context ->
+                val previewView = PreviewView(context).apply {
+                    this.scaleType = scaleType
+                    layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+                }
+
+                // CameraX Preview UseCase
+                val previewUseCase = Preview.Builder()
+                    .build()
+                    .also {
+                        it.setSurfaceProvider(previewView.surfaceProvider)
+                    }
+
+                coroutineScope.launch {
+                    val cameraProvider = context.getCameraProvider()
+                    try {
+                        // Must unbind the use-cases before rebinding them.
+                        cameraProvider.unbindAll()
+                        // Set up the image capture use case
+                        val imageFrameAnalysis = ImageAnalysis.Builder()
+                            .setTargetResolution(Size(480, 640))
+                            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                            .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
+                            .build()
+
+                        imageFrameAnalysis.setAnalyzer(cameraExecutor) { imageProxy ->
+                            // Convert ImageProxy to ImageBitmap for display
+                            //imageBitmap = imageProxy.toBitmap()
+                            val cameraXImage = imageProxy.image!!
+                            imageBitmap = Bitmap.createBitmap(
+                                cameraXImage.width,
+                                cameraXImage.height,
+                                Bitmap.Config.ARGB_8888
+                            )
+                            imageBitmap!!.copyPixelsFromBuffer(imageProxy.planes[0].buffer)
+                            imageBitmap =
+                                BitmapUtils.rotateBitmap(
+                                    imageBitmap!!,
+                                    imageProxy.imageInfo.rotationDegrees.toFloat()
+                                )
+
+                            // Release the ImageProxy
+                            imageProxy.close()
+                        }
+                        cameraProvider.bindToLifecycle(
+                            lifecycleOwner,
+                            cameraSelector,
+                            previewUseCase,
+                            imageFrameAnalysis
+                        )
+                    } catch (ex: Exception) {
+                        Log.e("manseeyy", "Use case binding failed", ex)
+                    }
+                }
+
+                previewView
+            }
+        )
+        Button(
+            onClick = {
+                onCaptureButtonClick(imageBitmap!!)
+            },
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 16.dp)
         ) {
             Icon(
                 Icons.Default.CheckCircle,
-                contentDescription = "",
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(54.dp)
+                contentDescription = null,
+                tint = Color.White
             )
         }
-    }
-    if (viewModel.showDialog){
-        RegisterFaceDialog(viewModel = viewModel)
     }
 }
 
@@ -129,12 +177,14 @@ fun AddPhotoScreen(
 fun RegisterFaceDialog(
     viewModel: AddPhotoScreenViewModel
 ) {
+    val context = LocalContext.current
     AlertDialog(
         onDismissRequest = { },
         confirmButton = {
             TextButton(
                 onClick = {
                     // add photo embedding to facelist
+                    viewModel.addPhoto(context.filesDir)
                     viewModel.faceName = ""
                     viewModel.currentFaceBitmap = createBitmap(10, 10)
                     viewModel.showDialog = false
@@ -145,10 +195,13 @@ fun RegisterFaceDialog(
             }
         },
         text = {
-            Column {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 Image(
-                    painter = BitmapPainter(viewModel.currentFaceBitmap.asImageBitmap()),
-                    contentDescription = "FACE_DETECTED"
+                    bitmap = viewModel.currentFaceBitmap.asImageBitmap(),
+                    contentDescription = "FACE_DETECTED",
+                    modifier = Modifier.padding(10.dp)
                 )
                 OutlinedTextField(
                     value = viewModel.faceName,

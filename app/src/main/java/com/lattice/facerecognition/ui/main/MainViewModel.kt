@@ -1,6 +1,8 @@
 package com.lattice.facerecognition.ui.main
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import com.lattice.facerecognition.FrameAnalyser
 import com.lattice.facerecognition.data.sharedpreferences.PreferenceStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.File
@@ -11,13 +13,18 @@ import java.io.ObjectOutputStream
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor(private val preferenceStorage: PreferenceStorage): ViewModel() {
+class MainViewModel @Inject constructor(
+    private val preferenceStorage: PreferenceStorage
+) : ViewModel() {
 
-    internal fun saveSerializedImageData(filesDir: File, data : ArrayList<Pair<String,FloatArray>> ) {
-        val serializedDataFile = File( filesDir , SERIALIZED_DATA_FILENAME )
+    internal fun saveSerializedImageData(
+        filesDir: File,
+        data: ArrayList<Pair<String, FloatArray>>
+    ) {
+        val serializedDataFile = File(filesDir, SERIALIZED_DATA_FILENAME)
         if (serializedDataFile.exists()) serializedDataFile.delete()
-        ObjectOutputStream( FileOutputStream( serializedDataFile )  ).apply {
-            writeObject( data )
+        ObjectOutputStream(FileOutputStream(serializedDataFile)).apply {
+            writeObject(data)
             flush()
             close()
         }
@@ -25,10 +32,11 @@ class MainViewModel @Inject constructor(private val preferenceStorage: Preferenc
     }
 
 
-    internal fun loadSerializedImageData(filesDir: File) : ArrayList<Pair<String,FloatArray>> {
-        val serializedDataFile = File( filesDir , SERIALIZED_DATA_FILENAME )
-        val objectInputStream = ObjectInputStream( FileInputStream( serializedDataFile ) )
-        val data = objectInputStream.readObject() as ArrayList<Pair<String,FloatArray>>
+    internal fun loadSerializedImageData(filesDir: File): ArrayList<Pair<String, FloatArray>> {
+        val serializedDataFile = File(filesDir, SERIALIZED_DATA_FILENAME)
+        val objectInputStream = ObjectInputStream(FileInputStream(serializedDataFile))
+        val data = objectInputStream.readObject() as ArrayList<Pair<String, FloatArray>>
+        Log.d("manseeyy", "${data[0].second.toList()}")
         objectInputStream.close()
         return data
     }
